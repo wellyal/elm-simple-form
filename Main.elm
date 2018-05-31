@@ -2,14 +2,60 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 
 
-main : Html a
+type alias Model =
+    { email : String
+    , message : String
+    , submitting : Bool
+    }
+
+
+type Msg
+    = InputEmail String
+    | InputMessage String
+    | SubmitForm
+
+
+initialModel : Model
+initialModel =
+    { email = ""
+    , message = ""
+    , submitting = False
+    }
+
+
 main =
-    Html.form []
+    program
+        { init = ( initialModel, Cmd.none )
+        , update = update
+        , subscriptions = \_ -> Sub.none
+        , view = view
+        }
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        InputEmail e ->
+            ( { model | email = e }, Cmd.none )
+
+        InputMessage m ->
+            ( { model | message = m }, Cmd.none )
+
+        SubmitForm ->
+            ( { model | submitting = True }, Cmd.none )
+
+
+view : Model -> Html Msg
+view model =
+    Html.form
+        [ onSubmit SubmitForm ]
         [ header
-        , body
+        , body model
         , footer
+        , text <| toString <| model
         ]
 
 
@@ -18,12 +64,14 @@ header =
         [ h1 [] [ text "Contact Us" ] ]
 
 
-body =
+body model =
     div []
         [ div []
             [ input
                 [ placeholder "your email"
                 , type_ "email"
+                , onInput InputEmail
+                , value model.email
                 ]
                 []
             ]
@@ -31,6 +79,8 @@ body =
             [ textarea
                 [ placeholder "your message"
                 , rows 7
+                , onInput InputMessage
+                , value model.message
                 ]
                 []
             ]
@@ -39,4 +89,7 @@ body =
 
 footer =
     div []
-        [ button [] [ text "Submit" ] ]
+        [ button
+            []
+            [ text "Submit" ]
+        ]
